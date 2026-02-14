@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BorgCal (Scaffold)</title>
+    <style>
+      :root { font-family: Arial, sans-serif; }
+      body { margin: 0; padding: 24px; background: #0f172a; color: #e2e8f0; }
+      .card { background: #111827; border: 1px solid #334155; border-radius: 12px; padding: 16px; max-width: 720px; }
+      button { background: #2563eb; border: 0; color: #fff; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
+      input, select { padding: 8px; border-radius: 8px; border: 1px solid #475569; background: #0b1220; color: #e2e8f0; }
+      .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+      pre { background: #020617; padding: 12px; border-radius: 8px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <h1>BorgCal — MVP Scaffold</h1>
+    <div class="card">
+      <p>This is a runnable starter. Next we can implement calendar sync, kanban, and charts.</p>
+      <div class="row">
+        <label>Date <input id="day" type="date" /></label>
+        <label>Quick Mood
+          <select id="quick">
+            <option value="up">👍 Up</option>
+            <option value="down">👎 Down</option>
+          </select>
+        </label>
+        <label>Score (1-10) <input id="score" type="number" min="1" max="10" /></label>
+      </div>
+      <div class="row">
+        <button id="save">Save daily mood</button>
+        <button id="health">Check API health</button>
+      </div>
+      <pre id="output">Ready.</pre>
+    </div>
+
+    <script>
+      const output = document.getElementById('output');
+      const dayInput = document.getElementById('day');
+      dayInput.value = new Date().toISOString().slice(0,10);
+
+      async function json(url, options) {
+        const res = await fetch(url, options);
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+      }
+
+      document.getElementById('health').onclick = () => json('/api/health');
+      document.getElementById('save').onclick = () => {
+        const day = dayInput.value;
+        const quick = document.getElementById('quick').value;
+        const scoreRaw = document.getElementById('score').value;
+        const mood_score = scoreRaw ? Number(scoreRaw) : null;
+        json(`/api/moods/${day}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ day, quick, mood_score, note_markdown: null })
+        });
+      };
+    </script>
+  </body>
+</html>
